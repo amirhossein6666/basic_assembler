@@ -1,6 +1,6 @@
-from src.assembler import first
+from src.assembler import assemble
 def main():
-    first("first.asm")
-    
+    assemble("first.asm")
+
 if __name__ == '__main__':
     main()
