@@ -24,21 +24,35 @@ def assemble(in_file):
                 #  begin second step of assemble
                 lines2 = lines
                 location2 = 0
+                org = 0
                 output = dict()
                 for l2 in lines2:
                     sections2 = l2.split()
                     instruction = sections2[0]
                     if len(sections2) == 1:
-                        if instruction == 'END':
+                        if instruction in src.statics.RI:
+                            output[location2] = hex(src.statics.RI[instruction])
+                        elif instruction == 'END':
                             keys = list(output.keys()).sort()
                             for key in keys:
                                 output[key] = struct.pack('>i', int(output[key], 16))
                             # right to output file 
-                        elif instruction in src.statics.RI:
-                            output[location2] = hex(src.statics.RI[instruction])
                         else:
                             print('facing with error')
                             break
-                    
-
+                    elif len(sections2) == 2:
+                        if instruction in src.statics.MI:
+                            if sections2[1] not in ADDRESSES:
+                                print('variable not defind')
+                            else:
+                                output[location2] = hex(int(src.statics.MI[instruction][0] + ADDRESSES[sections2[1]], 16))
+                        elif instruction == 'ORG':
+                            location2 = int(sections2[1] , 16) - 1
+                            org = location2
+                        elif instruction == 'DEC' or instruction == 'HEX':
+                            output[location2]
+                        elif instruction[-1] == ',':
+                            output[location2] = hex(int(src.statics.RI[sections2[1]]))
+                        else:
+                            print('eroor')
             location += 1
