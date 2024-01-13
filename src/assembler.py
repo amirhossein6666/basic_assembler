@@ -1,8 +1,6 @@
 import src.statics
 
 
-
-
 def assemble(in_file):
     ADDRESSES = dict()
     with open("./input/" + in_file, "r") as file:
@@ -32,11 +30,14 @@ def assemble(in_file):
                     sections2 = l2.split()
                     instruction = sections2[0]
                     if len(sections2) == 1:
+                        # only RI instructins or END
                         if instruction in src.statics.RI:
-                            output[location2] = hex(src.statics.RI[instruction])
+                            output[location2] = int(src.statics.RI[instruction])
                         elif instruction == 'END':
-                            None
                             # write to output file
+                            with open("./output/output.asm", "w") as out_file:
+                                for key in output.keys():
+                                    out_file.write(str(hex(key)) + "\t-->\t" + str(output[key]) + "\n")
                         else:
                             print('facing with error')
                             break
@@ -45,27 +46,46 @@ def assemble(in_file):
                             if sections2[1] not in ADDRESSES:
                                 print('variable not defind')
                             else:
-                                output[location2] = hex(
-                                    int(src.statics.MI[instruction][0] + ADDRESSES[sections2[1]], 16))
+                                # update warning
+                                output[location2] = hex(int(src.statics.MI[instruction][0] + ADDRESSES[sections2[1]], 16)).removeprefix("0x")
                         elif instruction == 'ORG':
                             location2 = int(sections2[1], 16) - 1
                             org = location2
                         elif instruction == 'DEC' or instruction == 'HEX':
-                            output[location2]
+                            if sections2[0] == 'HEX':
+                                temp = hex(int(sections2[1], 16)).replace("0x", "")
+                                while len(temp) < 4:
+                                    temp = "0" + temp
+                                hex_code = temp
+                            else:
+                                temp2 = hex(int(sections2[1])).removeprefix("0x").replace("0x", "")
+                                while len(temp2) < 4:
+                                    temp2 = "0" + temp2
+                                hex_code = temp2
+                            output[location2] = hex_code
                         elif instruction[-1] == ',':
-                            output[location2] = hex(int(src.statics.RI[sections2[1]]))
+                            output[location2] = int(src.statics.RI[sections2[1]])
                         else:
                             print('eroor')
                     elif len(sections2) == 3:
                         if sections2[2] == 'I':
-                            hex_code = hex(int(src.statics.MI[instruction][1] + ADDRESSES[sections2[1]], 16))
+                            hex_code = hex(int(src.statics.MI[instruction][1] + ADDRESSES[sections2[1]], 16)).removeprefix("0x")
+                        elif sections2[1]  in src.statics.MI:
+                            hex_code = hex(int(src.statics.MI[sections2[1]][0] + ADDRESSES[sections2[2]], 16)).removeprefix("0x")
                         else:
                             if sections2[1] == 'HEX':
-                                hex_code = hex(int(sections2[2], 16))
+                                temp = hex(int(sections2[2], 16)).replace("0x", "")
+                                while len(temp) < 4:
+                                    temp = "0" + temp
+                                hex_code = temp
                             else:
-                                hex_code = hex(int(sections2[2]))
+                                temp2 = hex(int(sections2[2])).removeprefix("0x").replace("0x", "")
+                                while len(temp2) < 4:
+                                    temp2 = "0" + temp2
+                                hex_code = temp2
                         output[location2] = hex_code
                     elif len(sections2) == 4:
-                        hex_code = hex(int(src.statics.MI[sections2[1]] + ADDRESSES[sections2[2]], 16))
+                        hex_code = hex(int(src.statics.MI[sections2[1]] + ADDRESSES[sections2[2]], 16)).removeprefix("0x")
                         output[location2] = hex_code
                     location2 += 1
+            location += 1
